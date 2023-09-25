@@ -29,16 +29,17 @@ public class BuyerService {
     @Autowired
     private BidRepository bidRepository;
 
-    public List<Product> viewProducts(){
+    public List<Product> viewProducts() throws Exception {
         List<Product> userProducts = null;
+        userProducts = productRepository.findAll();
 
-        try{
-            userProducts = productRepository.findAll();
+        if(userProducts.isEmpty()){
+            throw new Exception("There are no products to be bought at the moment, try your luck after some time!");
         }
-        catch (NullPointerException e){
-            return null;
-        }
-        return userProducts;
+
+        Stream<Product> stream = userProducts.parallelStream();
+        List<Product> productListSortedDescendingOrder = stream.collect(reverseStream()).toList();
+        return productListSortedDescendingOrder;
     }
 
     public Product placeBid(Product product) throws Exception {
@@ -48,7 +49,7 @@ public class BuyerService {
             List<Bid> bidList = productDetails.getBid();
 
             if(product.getCurrent_bid_amt()<=productDetails.getCurrent_bid_amt()){
-                throw new Exception("Bid Amount should be more than the current bid amount -> "+productDetails.getCurrent_bid_amt());
+                throw new Exception("Bid amount too low, minimum bid is $"+productDetails.getCurrent_bid_amt());
             }
             productDetails.setCurrent_bid_amt(product.getCurrent_bid_amt());
 

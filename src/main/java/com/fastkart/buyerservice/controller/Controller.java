@@ -24,10 +24,21 @@ public class Controller {
     private LinkedHashMap<String, Object> responseMap = new LinkedHashMap<>();
 
     @PostMapping("/viewAvailableProducts")
-    public ResponseEntity<List<Product>> viewAvailableProducts(){
+    public ResponseEntity<Object> viewAvailableProducts(){
+        responseMap.clear();
         log.info("Request received to view available products");
 
-        return ResponseEntity.status(HttpStatus.OK).body(buyerService.viewProducts());
+        try{
+            responseMap.put("products",buyerService.viewProducts());
+            responseMap.put("statusCode",HttpStatus.OK.value());
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap);
+        }
+        catch (Exception e){
+            responseMap.put("message",e.getMessage());
+            responseMap.put("statusCode",HttpStatus.OK.value());
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap);
+        }
+
     }
 
     @PostMapping("/placeBid")
